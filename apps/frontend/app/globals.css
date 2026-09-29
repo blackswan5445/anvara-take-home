@@ -1,63 +1,111 @@
 @import 'tailwindcss';
 
 /*
- * Tailwind CSS v4 - CSS-first configuration
- * No tailwind.config.js needed! Use CSS custom properties for theming.
- * Modern 2026 best practices: Oxide engine for faster builds, CSS vars for themes.
+ * Design tokens. @theme turns each --color-* into utilities (bg-primary, text-muted,
+ * border-border, ...). The previous bg-[--color-primary] syntax is Tailwind v3; v4
+ * compiles it to `background-color: --color-primary`, which is invalid, so none of
+ * the theme colors were applying.
  */
+@theme {
+  --color-primary: #4f46e5;
+  --color-primary-hover: #4338ca;
+  --color-primary-soft: #eef2ff;
+  --color-secondary: #059669;
+  --color-secondary-soft: #ecfdf5;
 
-/* Custom theme variables - modify these to customize the marketplace look */
-:root {
-  /* Primary brand colors */
-  --color-primary: #6366f1;
-  --color-primary-hover: #4f46e5;
-  --color-primary-light: #818cf8;
-
-  /* Secondary colors */
-  --color-secondary: #10b981;
-  --color-secondary-hover: #059669;
-
-  /* Neutral colors */
   --color-background: #ffffff;
+  --color-surface: #f8fafc;
   --color-foreground: #0f172a;
   --color-muted: #64748b;
   --color-border: #e2e8f0;
 
-  /* Status colors */
-  --color-success: #22c55e;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
+  --color-success: #15803d;
+  --color-success-soft: #f0fdf4;
+  --color-warning: #b45309;
+  --color-warning-soft: #fffbeb;
+  --color-danger: #dc2626;
+  --color-danger-soft: #fef2f2;
 
-  /* Spacing */
-  --spacing-container: 1rem;
-}
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
-/* Dark mode support - TODO: Implement dark mode toggle */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-background: #0f172a;
-    --color-foreground: #f8fafc;
-    --color-muted: #94a3b8;
-    --color-border: #334155;
+  --animate-fade-in: fade-in 0.3s ease-out both;
+  --animate-toast-in: toast-in 0.25s ease-out both;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px) scale(0.98);
+    }
   }
 }
 
-/* Base styles */
-body {
-  background-color: var(--color-background);
-  color: var(--color-foreground);
-  font-family:
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    Roboto,
-    sans-serif;
+/* Dark mode follows the OS setting; only the tokens change */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-primary: #818cf8;
+    --color-primary-hover: #a5b4fc;
+    --color-primary-soft: #1e1b4b;
+    --color-secondary: #34d399;
+    --color-secondary-soft: #022c22;
+
+    --color-background: #0b1120;
+    --color-surface: #111827;
+    --color-foreground: #f1f5f9;
+    --color-muted: #94a3b8;
+    --color-border: #1f2937;
+
+    --color-success: #4ade80;
+    --color-success-soft: #052e16;
+    --color-warning: #fbbf24;
+    --color-warning-soft: #451a03;
+    --color-danger: #f87171;
+    --color-danger-soft: #450a0a;
+  }
 }
 
-/*
- * HINT: Use Tailwind v4 arbitrary values with CSS vars:
- * - bg-[--color-primary] for custom backgrounds
- * - text-[--color-foreground] for custom text colors
- * - p-[--spacing-container] for custom spacing
- */
+@layer base {
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary;
+  }
+}
+
+/* Shared primitives, so every button/input/card looks and behaves the same */
+@utility btn {
+  @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60;
+}
+@utility btn-primary {
+  @apply btn bg-primary text-white hover:bg-primary-hover dark:text-slate-950;
+}
+@utility btn-secondary {
+  @apply btn border border-border bg-background text-foreground hover:bg-surface;
+}
+@utility btn-danger {
+  @apply btn bg-danger text-white hover:opacity-90 dark:text-slate-950;
+}
+@utility input {
+  @apply block w-full rounded-lg border border-border bg-background px-3 py-2 text-base text-foreground placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 aria-invalid:border-danger sm:text-sm;
+}
+@utility label {
+  @apply mb-1 block text-sm font-medium text-foreground;
+}
+@utility card {
+  @apply rounded-xl border border-border bg-background shadow-sm;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
