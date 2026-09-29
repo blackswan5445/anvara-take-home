@@ -91,11 +91,12 @@ export default async function Home() {
               ['Sponsors', stats.sponsors],
               ['Active campaigns', stats.activeCampaigns],
             ].map(([label, value]) => (
-              <div key={label} className="card animate-fade-in p-6">
+              // dt must precede dd; flex-col-reverse keeps the number visually on top
+              <div key={label} className="card animate-fade-in flex flex-col-reverse p-6">
+                <dt className="mt-1 text-sm text-muted">{label}</dt>
                 <dd className="text-4xl font-bold tracking-tight text-primary tabular-nums">
                   {formatCompact(Number(value))}
                 </dd>
-                <dt className="mt-1 text-sm text-muted">{label}</dt>
               </div>
             ))}
           </dl>

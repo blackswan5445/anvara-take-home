@@ -38,7 +38,7 @@ export function DialogButton({
         aria-labelledby={titleId}
         // Click on the backdrop (the dialog element itself, outside the panel) closes it
         onClick={(event) => event.target === event.currentTarget && close()}
-        className="m-0 mt-auto w-full max-w-none rounded-t-2xl bg-background p-0 text-foreground shadow-2xl backdrop:bg-slate-950/60 sm:m-auto sm:max-w-lg sm:rounded-2xl"
+        className="m-0 mt-auto w-full max-w-none rounded-t-2xl bg-background p-0 text-left text-foreground shadow-2xl backdrop:bg-slate-950/60 sm:m-auto sm:max-w-lg sm:rounded-2xl"
       >
         <div className="max-h-[85dvh] overflow-y-auto p-6">
           <div className="mb-4 flex items-center justify-between gap-4">
