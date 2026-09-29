@@ -32,7 +32,7 @@ export function Toaster() {
         <div
           key={toast.id}
           role={toast.tone === 'error' ? 'alert' : 'status'}
-          className={`animate-toast-in pointer-events-auto flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium shadow-lg ${
+          className={`animate-toast pointer-events-auto flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium shadow-lg ${
             toast.tone === 'error'
               ? 'bg-danger text-white dark:text-slate-950'
               : 'bg-foreground text-background'

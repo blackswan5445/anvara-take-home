@@ -29,7 +29,8 @@
   --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   --animate-fade-in: fade-in 0.3s ease-out both;
-  --animate-toast-in: toast-in 0.25s ease-out both;
+  /* In, hold, then slide out just before the Toaster removes it at 4s */
+  --animate-toast: toast-in 0.25s ease-out both, toast-out 0.3s ease-in 3.7s forwards;
 
   @keyframes fade-in {
     from {
@@ -41,6 +42,12 @@
     from {
       opacity: 0;
       transform: translateY(12px) scale(0.98);
+    }
+  }
+  @keyframes toast-out {
+    to {
+      opacity: 0;
+      transform: translateX(16px);
     }
   }
 }
@@ -80,7 +87,7 @@
 
 /* Shared primitives, so every button/input/card looks and behaves the same */
 @utility btn {
-  @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60;
+  @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-[color,background-color,border-color,transform] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100;
 }
 @utility btn-primary {
   @apply btn bg-primary text-white hover:bg-primary-hover dark:text-slate-950;
@@ -92,13 +99,31 @@
   @apply btn bg-danger text-white hover:opacity-90 dark:text-slate-950;
 }
 @utility input {
-  @apply block w-full rounded-lg border border-border bg-background px-3 py-2 text-base text-foreground placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 aria-invalid:border-danger sm:text-sm;
+  @apply block w-full rounded-lg border border-border bg-background px-3 py-2 text-base transition-[border-color,box-shadow] text-foreground placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 aria-invalid:border-danger sm:text-sm;
 }
 @utility label {
   @apply mb-1 block text-sm font-medium text-foreground;
 }
 @utility card {
-  @apply rounded-xl border border-border bg-background shadow-sm;
+  @apply rounded-xl border border-border bg-background shadow-sm transition-opacity;
+  /* Fade the card while its delete is in flight (see ConfirmDeleteButton) */
+  &:has([data-deleting]) {
+    @apply pointer-events-none opacity-40;
+  }
+}
+
+/* Dialogs and their backdrop fade/slide in; from the bottom on mobile (bottom sheet) */
+dialog[open] {
+  animation: dialog-in 0.2s ease-out;
+}
+dialog[open]::backdrop {
+  animation: fade-in 0.2s ease-out;
+}
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
