@@ -29,9 +29,9 @@ router.get('/', async (req: Request, res: Response) => {
 });
 
 // GET /api/campaigns/:id - Get single campaign with details
-router.get('/:id', async (req: Request, res: Response) => {
+router.get('/:id', async (req: Request<{ id: string }>, res: Response) => {
   try {
-    const id = getParam(req.params.id);
+    const { id } = req.params;
     const campaign = await prisma.campaign.findUnique({
       where: { id },
       include: {

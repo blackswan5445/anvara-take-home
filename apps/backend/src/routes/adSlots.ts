@@ -32,9 +32,9 @@ router.get('/', async (req: Request, res: Response) => {
 });
 
 // GET /api/ad-slots/:id - Get single ad slot with details
-router.get('/:id', async (req: Request, res: Response) => {
+router.get('/:id', async (req: Request<{ id: string }>, res: Response) => {
   try {
-    const id = getParam(req.params.id);
+    const { id } = req.params;
     const adSlot = await prisma.adSlot.findUnique({
       where: { id },
       include: {
@@ -60,11 +60,10 @@ router.get('/:id', async (req: Request, res: Response) => {
 });
 
 // POST /api/ad-slots - Create new ad slot
-// BUG: This accepts 'dimensions' and 'pricingModel' fields that don't exist in Prisma schema
 // BUG: No input validation for basePrice (could be negative or zero)
 router.post('/', async (req: Request, res: Response) => {
   try {
-    const { name, description, type, dimensions, basePrice, pricingModel, publisherId } = req.body;
+    const { name, description, type, position, width, height, basePrice, publisherId } = req.body;
 
     if (!name || !type || !basePrice || !publisherId) {
       res.status(400).json({
@@ -82,9 +81,10 @@ router.post('/', async (req: Request, res: Response) => {
         name,
         description,
         type,
-        dimensions, // BUG: This field doesn't exist in schema
+        position,
+        width,
+        height,
         basePrice,
-        pricingModel: pricingModel || 'CPM', // BUG: This field doesn't exist in schema
         publisherId,
       },
       include: {
@@ -101,9 +101,9 @@ router.post('/', async (req: Request, res: Response) => {
 
 // POST /api/ad-slots/:id/book - Book an ad slot (simplified booking flow)
 // This marks the slot as unavailable and creates a simple booking record
-router.post('/:id/book', async (req: Request, res: Response) => {
+router.post('/:id/book', async (req: Request<{ id: string }>, res: Response) => {
   try {
-    const id = getParam(req.params.id);
+    const { id } = req.params;
     const { sponsorId, message } = req.body;
 
     if (!sponsorId) {
@@ -152,7 +152,7 @@ router.post('/:id/book', async (req: Request, res: Response) => {
 });
 
 // POST /api/ad-slots/:id/unbook - Reset ad slot to available (for testing)
-router.post('/:id/unbook', async (req: Request, res: Response) => {
+router.post('/:id/unbook', async (req: Request<{ id: string }>, res: Response) => {
   try {
     const { id } = req.params;
 

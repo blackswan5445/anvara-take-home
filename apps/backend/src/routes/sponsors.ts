@@ -22,9 +22,9 @@ router.get('/', async (_req: Request, res: Response) => {
 });
 
 // GET /api/sponsors/:id - Get single sponsor with campaigns
-router.get('/:id', async (req: Request, res: Response) => {
+router.get('/:id', async (req: Request<{ id: string }>, res: Response) => {
   try {
-    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const { id } = req.params;
     const sponsor = await prisma.sponsor.findUnique({
       where: { id },
       include: {

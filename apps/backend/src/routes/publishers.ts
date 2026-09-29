@@ -1,6 +1,5 @@
 import { Router, type Request, type Response, type IRouter } from 'express';
 import { prisma } from '../db.js';
-import { getParam } from '../utils/helpers.js';
 
 const router: IRouter = Router();
 
@@ -23,9 +22,9 @@ router.get('/', async (_req: Request, res: Response) => {
 });
 
 // GET /api/publishers/:id - Get single publisher with ad slots
-router.get('/:id', async (req: Request, res: Response) => {
+router.get('/:id', async (req: Request<{ id: string }>, res: Response) => {
   try {
-    const id = getParam(req.params.id);
+    const { id } = req.params;
     const publisher = await prisma.publisher.findUnique({
       where: { id },
       include: {

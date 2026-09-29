@@ -21,8 +21,6 @@ export function Nav() {
         .then((res) => res.json())
         .then((data) => setRole(data.role))
         .catch(() => setRole(null));
-    } else {
-      setRole(null);
     }
   }, [user?.id]);
 

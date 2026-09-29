@@ -15,12 +15,7 @@ router.get('/', async (req: Request, res: Response) => {
         ...(publisherId && { publisherId: getParam(publisherId) }),
         ...(status && {
           status: status as string as
-            | 'PENDING'
-            | 'APPROVED'
-            | 'REJECTED'
-            | 'ACTIVE'
-            | 'PAUSED'
-            | 'COMPLETED',
+            'PENDING' | 'APPROVED' | 'REJECTED' | 'ACTIVE' | 'PAUSED' | 'COMPLETED',
         }),
       },
       include: {

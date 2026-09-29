@@ -1,81 +1,53 @@
 // Utility helpers for the API
 
-// Helper to safely extract route/query params
-// BUG: Return type should be 'string' but function can return empty string silently
-export function getParam(param: unknown): string {
+// Extract a single string from a route/query param (Express types these as string | string[] | ParsedQs).
+// Returns undefined for a missing value instead of silently collapsing it to ''.
+export function getParam(param: unknown): string | undefined {
   if (typeof param === 'string') return param;
   if (Array.isArray(param) && typeof param[0] === 'string') return param[0];
-  return '';
+  return undefined;
 }
 
-// Helper to format currency values
-// FIXME: 'amount' has implicit 'any' type - should be 'number'
-export function formatCurrency(amount: any, currency = 'USD') {
-  const formatter = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency,
-  });
-  return formatter.format(amount);
+export function formatCurrency(amount: number, currency = 'USD'): string {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
 }
 
-// Helper to calculate percentage change
-// BUG: Unused variable 'unusedVariable' should be removed
-// FIXME: Parameters have implicit 'any' types
-export function calculatePercentChange(oldValue: any, newValue: any) {
-  const unusedVariable = 'this should trigger a lint error';
+export function calculatePercentChange(oldValue: number, newValue: number): number {
   if (oldValue === 0) return newValue > 0 ? 100 : 0;
   return ((newValue - oldValue) / oldValue) * 100;
 }
 
-// Parse pagination params from query
-// FIXME: 'query' has implicit 'any' type - should be typed
-export function parsePagination(query: any) {
-  const page = parseInt(query.page) || 1;
-  const limit = parseInt(query.limit) || 10;
-  const skip = (page - 1) * limit;
-
-  return { page, limit, skip };
+export function parsePagination(query: Record<string, unknown>): {
+  page: number;
+  limit: number;
+  skip: number;
+} {
+  const page = Math.max(1, Number.parseInt(getParam(query.page) ?? '', 10) || 1);
+  const limit = clampValue(Number.parseInt(getParam(query.limit) ?? '', 10) || 10, 1, 100);
+  return { page, limit, skip: (page - 1) * limit };
 }
 
-// Validate email format
-// FIXME: 'email' should be typed as 'string' not 'any'
-export function isValidEmail(email: any): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
+export function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-// Helper to build filter object from query params
-// FIXME: Multiple 'any' types that should be properly typed
-export const buildFilters = (query: any, allowedFields: string[]) => {
-  const filters: any = {};
-
+export function buildFilters<K extends string>(
+  query: Record<string, unknown>,
+  allowedFields: readonly K[]
+): Partial<Record<K, unknown>> {
+  const filters: Partial<Record<K, unknown>> = {};
   for (const field of allowedFields) {
-    if (query[field] !== undefined) {
-      filters[field] = query[field];
-    }
+    if (query[field] !== undefined) filters[field] = query[field];
   }
-
   return filters;
-};
-
-// Unused export that should be removed or marked deprecated
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const DEPRECATED_CONFIG = {
-  apiVersion: 'v1',
-  timeout: 5000,
-};
-
-// BUG: This function has a logic error - it doesn't handle negative numbers correctly
-export function clampValue(value: number, min: number, max: number): number {
-  // Should use Math.max(min, Math.min(max, value)) but this is wrong
-  if (value < min) return min;
-  if (value > max) return max;
-  return value;
 }
 
-// TODO: Add proper date formatting helper
-// This is a stub that candidates might notice and implement
-export function formatDate(date: any): string {
-  // BUG: Doesn't handle invalid dates
-  return new Date(date).toLocaleDateString();
+// The original comment claimed this mishandled negatives; it didn't. Same logic, one line.
+export function clampValue(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
+}
+
+export function formatDate(date: Date | string | number): string {
+  const parsed = new Date(date);
+  return Number.isNaN(parsed.getTime()) ? 'Invalid date' : parsed.toLocaleDateString('en-US');
 }
