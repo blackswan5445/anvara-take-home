@@ -23,12 +23,16 @@ interface ApiOptions extends Omit<RequestInit, 'body'> {
 
 /** Call the backend as the current user. Throws ApiError with the API's message on non-2xx. */
 export async function api<T>(path: string, { body, ...init }: ApiOptions = {}): Promise<T> {
-  const cookie = (await headers()).get('cookie');
+  const incoming = await headers();
+  const cookie = incoming.get('cookie');
+  // Lets the API rate-limit per end user rather than per Next.js server
+  const forwardedFor = incoming.get('x-forwarded-for');
   const res = await fetch(`${API_URL}${path}`, {
     ...init,
     headers: {
       ...(body !== undefined && { 'Content-Type': 'application/json' }),
       ...(cookie && { cookie }),
+      ...(forwardedFor && { 'x-forwarded-for': forwardedFor }),
       ...init.headers,
     },
     body: body === undefined ? undefined : JSON.stringify(body),

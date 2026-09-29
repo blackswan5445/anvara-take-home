@@ -67,7 +67,7 @@ router.get('/', async (req: Request, res: Response) => {
 
 // GET /api/ad-slots/:id - Single ad slot with its placements
 router.get('/:id', requireOwnAdSlot, async (req: Request<{ id: string }>, res: Response) => {
-  const adSlot = await prisma.adSlot.findUnique({
+  const adSlot = await prisma.adSlot.findUniqueOrThrow({
     where: { id: req.params.id },
     include: {
       placements: { include: { campaign: { select: { id: true, name: true, status: true } } } },

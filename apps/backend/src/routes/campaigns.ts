@@ -71,7 +71,7 @@ router.get('/', async (req: Request, res: Response) => {
 
 // GET /api/campaigns/:id - Single campaign with creatives and placements
 router.get('/:id', requireOwnCampaign, async (req: Request<{ id: string }>, res: Response) => {
-  const campaign = await prisma.campaign.findUnique({
+  const campaign = await prisma.campaign.findUniqueOrThrow({
     where: { id: req.params.id },
     include: {
       creatives: true,

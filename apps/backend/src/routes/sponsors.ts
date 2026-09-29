@@ -29,7 +29,7 @@ router.get(
   requireRole('sponsor'),
   requireOwnSponsor,
   async (req: Request<{ id: string }>, res: Response) => {
-    const sponsor = await prisma.sponsor.findUnique({
+    const sponsor = await prisma.sponsor.findUniqueOrThrow({
       where: { id: req.params.id },
       include: {
         campaigns: { include: { _count: { select: { placements: true } } } },

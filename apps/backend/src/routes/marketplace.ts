@@ -118,8 +118,8 @@ router.post(
     }
 
     // ponytail: booking only flips availability; persisting a Placement needs a creative + campaign picker
-    console.info(`Ad slot ${id} booked by sponsor ${roleIdOf(req, 'sponsor')}`, body.message ?? '');
-    const adSlot = await prisma.adSlot.findUnique({
+    console.info(`Ad slot ${id} booked by sponsor ${roleIdOf(req, 'sponsor')}`);
+    const adSlot = await prisma.adSlot.findUniqueOrThrow({
       where: { id },
       include: { publisher: publicPublisher },
     });

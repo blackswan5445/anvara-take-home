@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { Router, type IRouter, type Request, type Response } from 'express';
 import { z } from 'zod';
+import { publicFormLimit } from '../rateLimit.js';
 import { prisma } from '../db.js';
 import { money, optionalText, parseOr400, requiredText } from '../validation.js';
 
@@ -18,7 +19,7 @@ const quoteRequestSchema = z.object({
 
 // POST /api/quotes/request - Dummy endpoint per the challenge: validate, don't persist.
 // Open to signed-out visitors on purpose: quotes are a lead-capture path.
-router.post('/request', async (req: Request, res: Response) => {
+router.post('/request', publicFormLimit, async (req: Request, res: Response) => {
   const data = parseOr400(quoteRequestSchema, req.body, res);
   if (!data) return;
 

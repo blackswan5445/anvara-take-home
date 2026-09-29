@@ -154,6 +154,7 @@ describe('campaigns', () => {
 
     expect((await request(app).delete(path).set('Cookie', sponsor)).status).toBe(204);
     expect((await request(app).get(path).set('Cookie', sponsor)).status).toBe(404);
+    expect((await request(app).delete(path).set('Cookie', sponsor)).status).toBe(404);
   });
 });
 
@@ -245,6 +246,25 @@ describe('newsletter and quotes', () => {
     });
     expect(res.status).toBe(201);
     expect(res.body.quoteId).toEqual(expect.any(String));
+  });
+});
+
+describe('rate limiting', () => {
+  it('throttles public form spam per client IP', async () => {
+    const send = () =>
+      request(app)
+        .post('/api/newsletter/subscribe')
+        .set('X-Forwarded-For', '203.0.113.7') // trusted: supertest connects over loopback
+        .send({ email: 'spam@example.com' });
+    for (let i = 0; i < 10; i++) await send();
+    expect((await send()).status).toBe(429);
+
+    // A different client is unaffected
+    const other = await request(app)
+      .post('/api/newsletter/subscribe')
+      .set('X-Forwarded-For', '203.0.113.8')
+      .send({ email: 'real@example.com' });
+    expect(other.status).toBe(200);
   });
 });
 
