@@ -35,7 +35,6 @@ export type CampaignStatus =
 export const AD_SLOT_TYPES = ['DISPLAY', 'VIDEO', 'NATIVE', 'NEWSLETTER', 'PODCAST'] as const;
 export type AdSlotType = (typeof AD_SLOT_TYPES)[number];
 
-
 export interface Campaign {
   id: string;
   name: string;
@@ -77,7 +76,6 @@ export interface PublicPublisher {
   subscriberCount: number;
   isVerified: boolean;
 }
-
 
 export interface DashboardStats {
   sponsors: number;
