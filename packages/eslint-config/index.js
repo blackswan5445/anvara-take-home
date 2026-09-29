@@ -34,6 +34,8 @@ export const baseConfig = [
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'error',
       'no-console': 'warn',
+      // TypeScript already reports undefined identifiers; this rule false-positives on globals/types
+      'no-undef': 'off',
     },
   },
   prettierConfig,
@@ -66,6 +68,8 @@ export const reactConfig = [
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'error',
       'no-console': 'warn',
+      // TypeScript already reports undefined identifiers; this rule false-positives on globals/types
+      'no-undef': 'off',
     },
   },
   {
@@ -76,7 +80,7 @@ export const reactConfig = [
     },
     settings: {
       react: {
-        version: 'detect',
+        version: '19.2', // 'detect' calls context.getFilename(), removed in ESLint 10
       },
     },
     rules: {

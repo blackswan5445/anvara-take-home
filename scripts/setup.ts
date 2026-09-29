@@ -314,7 +314,7 @@ ${colors.cyan}╔═════════════════════
   // 6a: Better Auth tables (user, session, account, verification)
   // Use dotenv-cli to load .env from root directory
   try {
-    execSync(`npx dotenv-cli -e ${join(ROOT_DIR, '.env')} -- npx @better-auth/cli migrate --yes`, {
+    execSync(`npx dotenv-cli -e "${join(ROOT_DIR, '.env')}" -- npx @better-auth/cli migrate --yes`, {
       cwd: join(ROOT_DIR, 'apps', 'frontend'),
       stdio: 'inherit',
       encoding: 'utf-8',
