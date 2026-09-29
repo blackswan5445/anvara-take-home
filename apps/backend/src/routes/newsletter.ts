@@ -14,10 +14,7 @@ router.post('/subscribe', publicFormLimit, (req: Request, res: Response) => {
   const data = parseOr400(subscribeSchema, req.body, res);
   if (!data) return;
 
-  res.json({
-    success: true,
-    message: 'Thanks for subscribing! Watch your inbox for new listings.',
-  });
+  res.json({ success: true, message: 'Thanks for subscribing!' });
 });
 
 export default router;
