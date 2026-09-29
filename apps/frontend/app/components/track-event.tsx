@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, type ComponentProps } from 'react';
-import { track, type AnalyticsEvent, type AnalyticsParams } from '@/lib/analytics';
+import { setUserType, track, type AnalyticsEvent, type AnalyticsParams } from '@/lib/analytics';
 
 /** Fires an analytics event once when a Server Component's output mounts (views, exposures). */
 export function TrackEvent({ event, params }: { event: AnalyticsEvent; params?: AnalyticsParams }) {
@@ -15,6 +15,15 @@ export function TrackEvent({ event, params }: { event: AnalyticsEvent; params?: 
     track(event, params);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- key captures event + params
   }, [key]);
+  return null;
+}
+
+/**
+ * Tags later events with the viewer's role. Render it before the page content: sibling effects
+ * run in order, so the role is set before any page-level TrackEvent fires.
+ */
+export function AnalyticsUser({ role }: { role: string | null }) {
+  useEffect(() => setUserType(role), [role]);
   return null;
 }
 

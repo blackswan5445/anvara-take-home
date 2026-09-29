@@ -2,8 +2,10 @@
 
 import { useActionState } from 'react';
 import { DialogButton } from '@/app/components/dialog-button';
+import { useABTest } from '@/app/components/experiments-provider';
 import { Field, FormError } from '@/app/components/field';
 import { SubmitButton } from '@/app/components/submit-button';
+import { TrackEvent } from '@/app/components/track-event';
 import { track } from '@/lib/analytics';
 import type { AdSlot, FormState } from '@/lib/types';
 import { submittedOr } from '@/lib/utils';
@@ -11,33 +13,49 @@ import { requestQuote } from '../../actions';
 import type { Viewer } from './booking-panel';
 
 const TIMELINES = ['As soon as possible', 'Within a month', 'Next quarter', 'Flexible'];
+const QUOTE_CTA = { control: 'Request a quote', pricing: 'Get custom pricing' } as const;
 const initialState: FormState = {};
 
 export function QuoteDialog({ adSlot, viewer }: { adSlot: AdSlot; viewer: Viewer | null }) {
+  const variant = useABTest('quote-cta');
   return (
-    <DialogButton
-      label="Request a quote"
-      title={`Request a quote: ${adSlot.name}`}
-      className="btn-secondary w-full"
-    >
-      {(close) => <QuoteForm adSlot={adSlot} viewer={viewer} onDone={close} />}
-    </DialogButton>
+    <>
+      <DialogButton
+        label={QUOTE_CTA[variant]}
+        title={`Request a quote: ${adSlot.name}`}
+        className="btn-secondary w-full"
+        onOpen={() =>
+          track('cta_click', { cta: 'request_quote', item_id: adSlot.id, cta_variant: variant })
+        }
+      >
+        {(close) => (
+          <QuoteForm adSlot={adSlot} viewer={viewer} ctaVariant={variant} onDone={close} />
+        )}
+      </DialogButton>
+      <TrackEvent event="experiment_exposure" params={{ experiment: 'quote-cta', variant }} />
+    </>
   );
 }
 
 function QuoteForm({
   adSlot,
   viewer,
+  ctaVariant,
   onDone,
 }: {
   adSlot: AdSlot;
   viewer: Viewer | null;
+  ctaVariant: string;
   onDone: () => void;
 }) {
   const [state, formAction] = useActionState(async (prev: FormState, formData: FormData) => {
     const result = await requestQuote(adSlot.id, prev, formData);
     if (result.success)
-      track('generate_lead', { item_id: adSlot.id, lead_source: 'quote_request' });
+      track('generate_lead', {
+        item_id: adSlot.id,
+        lead_source: 'quote_request',
+        cta_variant: ctaVariant,
+      });
     return result;
   }, initialState);
   const errors = state.fieldErrors ?? {};

@@ -2,9 +2,13 @@ import { GoogleAnalytics } from '@next/third-parties/google';
 import type { Metadata, Viewport } from 'next';
 import Link from 'next/link';
 import { GA_ID } from '@/lib/analytics';
+import { getAssignments } from '@/lib/experiments.server';
+import { getCurrentUser } from '@/lib/session';
+import { ExperimentsProvider } from './components/experiments-provider';
 import { Nav } from './components/nav';
 import { NewsletterForm } from './components/newsletter-form';
 import { Toaster } from './components/toaster';
+import { AnalyticsUser } from './components/track-event';
 import './globals.css';
 
 const SITE_URL = process.env.BETTER_AUTH_URL || 'http://localhost:3847';
@@ -45,7 +49,12 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const [user, assignments] = await Promise.all([
+    getCurrentUser().catch(() => null),
+    getAssignments(),
+  ]);
+
   return (
     <html lang="en">
       <body className="flex min-h-dvh flex-col">
@@ -55,9 +64,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           Skip to content
         </a>
+        <AnalyticsUser role={user?.role ?? null} />
         <Nav />
         <main id="main" className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:py-10">
-          {children}
+          <ExperimentsProvider assignments={assignments}>{children}</ExperimentsProvider>
         </main>
         <footer className="border-t border-border bg-surface">
           <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 md:grid-cols-2 md:items-center">

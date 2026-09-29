@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { api } from '@/lib/api';
 import type { AdSlot, DashboardStats, Paginated } from '@/lib/types';
 import { formatCompact } from '@/lib/utils';
+import { TrackedLink } from './components/track-event';
 import { ListingCard } from './marketplace/components/listing-card';
 
 // The landing page must render even if the API is down; live data is a bonus, not a dependency
@@ -74,12 +75,22 @@ export default async function Home() {
             instead of weeks of back-and-forth.
           </p>
           <div className="flex flex-wrap gap-3">
-            <Link href="/marketplace" className="btn-primary px-6 text-base">
+            <TrackedLink
+              href="/marketplace"
+              event="cta_click"
+              params={{ cta: 'hero_browse' }}
+              className="btn-primary px-6 text-base"
+            >
               Browse sponsorships
-            </Link>
-            <Link href="/login" className="btn-secondary px-6 text-base">
+            </TrackedLink>
+            <TrackedLink
+              href="/login"
+              event="cta_click"
+              params={{ cta: 'hero_list_inventory' }}
+              className="btn-secondary px-6 text-base"
+            >
               List your inventory
-            </Link>
+            </TrackedLink>
           </div>
         </div>
 
@@ -180,12 +191,14 @@ export default async function Home() {
             ? `${stats.availableAdSlots} ad slots from ${stats.publishers} publishers are open right now.`
             : 'Find the right audience and book your first sponsorship today.'}
         </p>
-        <Link
+        <TrackedLink
           href="/marketplace"
+          event="cta_click"
+          params={{ cta: 'final_find_audience' }}
           className="btn mt-8 bg-white px-6 text-base text-primary hover:bg-white/90 dark:bg-primary dark:text-slate-950"
         >
           Find your audience
-        </Link>
+        </TrackedLink>
       </section>
     </div>
   );

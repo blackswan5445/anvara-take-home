@@ -6,6 +6,7 @@ interface DialogButtonProps {
   label: ReactNode;
   title: string;
   className?: string;
+  onOpen?: () => void;
   /** Rendered fresh on every open, so form state never leaks between openings. */
   children: (close: () => void) => ReactNode;
 }
@@ -15,6 +16,7 @@ export function DialogButton({
   label,
   title,
   className = 'btn-primary',
+  onOpen,
   children,
 }: DialogButtonProps) {
   // Callback ref into state (not useRef) so `close` can be handed to children during render
@@ -25,6 +27,7 @@ export function DialogButton({
   const open = () => {
     setOpenCount((count) => count + 1);
     dialog?.showModal();
+    onOpen?.();
   };
   const close = () => dialog?.close();
 

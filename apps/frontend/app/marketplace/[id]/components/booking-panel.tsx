@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useActionState, useRef } from 'react';
 import { Field, FormError } from '@/app/components/field';
 import { SubmitButton } from '@/app/components/submit-button';
+import { TrackedLink } from '@/app/components/track-event';
 import { track } from '@/lib/analytics';
 import type { AdSlot, FormState, UserRole } from '@/lib/types';
 import { formatPrice } from '@/lib/utils';
@@ -120,9 +121,14 @@ export function BookingPanel({ adSlot, viewer, ctaLabel, ctaVariant }: BookingPa
           book placements.
         </p>
       ) : (
-        <Link href="/login" className="btn-primary w-full">
+        <TrackedLink
+          href="/login"
+          event="cta_click"
+          params={{ cta: 'login_to_book', item_id: adSlot.id }}
+          className="btn-primary w-full"
+        >
           Log in to book
-        </Link>
+        </TrackedLink>
       )}
 
       {viewer?.role !== 'publisher' && (

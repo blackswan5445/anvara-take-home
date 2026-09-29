@@ -10,10 +10,15 @@ interface Experiment<V extends string> {
 export const EXPERIMENTS = {
   // Does outcome-framed CTA copy lift bookings over the literal action?
   'booking-cta': { variants: ['control', 'outcome'], weights: [50, 50] },
+  // Does naming the benefit get more quote requests than the generic label? (client-side via useABTest)
+  'quote-cta': { variants: ['control', 'pricing'], weights: [50, 50] },
 } as const satisfies Record<string, Experiment<string>>;
 
 export type ExperimentId = keyof typeof EXPERIMENTS;
 export type Variant<Id extends ExperimentId> = (typeof EXPERIMENTS)[Id]['variants'][number];
+
+/** Raw cookie values per experiment; validate with isVariant before use. */
+export type Assignments = Partial<Record<ExperimentId, string>>;
 
 export const experimentCookie = (id: ExperimentId) => `ab_${id}`;
 
