@@ -1,95 +1,68 @@
-'use client';
-
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { authClient } from '@/auth-client';
+import { getCurrentUser } from '@/lib/session';
+import { LogoutButton } from './logout-button';
+import { NavLinks, type NavLink } from './nav-links';
 
-type UserRole = 'sponsor' | 'publisher' | null;
+export async function Nav() {
+  // If the API is down, render the signed-out nav rather than taking every page down with it
+  const user = await getCurrentUser().catch(() => null);
 
-export function Nav() {
-  const { data: session, isPending } = authClient.useSession();
-  const user = session?.user;
-  const [role, setRole] = useState<UserRole>(null);
+  const links: NavLink[] = [{ href: '/marketplace', label: 'Marketplace' }];
+  if (user?.role === 'sponsor') links.push({ href: '/dashboard/sponsor', label: 'My Campaigns' });
+  if (user?.role === 'publisher')
+    links.push({ href: '/dashboard/publisher', label: 'My Ad Slots' });
 
-  // TODO: Convert to server component and fetch role server-side
-  // Fetch user role from backend when user is logged in
-  useEffect(() => {
-    if (user?.id) {
-      fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4291'}/api/auth/role/${user.id}`
-      )
-        .then((res) => res.json())
-        .then((data) => setRole(data.role))
-        .catch(() => setRole(null));
-    }
-  }, [user?.id]);
-
-  // TODO: Add active link styling using usePathname() from next/navigation
-  // The current page's link should be highlighted differently
+  const account = user ? (
+    <div className="flex flex-wrap items-center gap-3">
+      <span className="text-sm text-muted">
+        {user.name}
+        {user.role && (
+          <span className="ml-2 rounded-full bg-primary-soft px-2 py-0.5 text-xs font-medium text-primary capitalize">
+            {user.role}
+          </span>
+        )}
+      </span>
+      <LogoutButton />
+    </div>
+  ) : (
+    <Link href="/login" className="btn-primary">
+      Log in
+    </Link>
+  );
 
   return (
-    <header className="border-b border-[--color-border]">
-      <nav className="mx-auto flex max-w-6xl items-center justify-between p-4">
-        <Link href="/" className="text-xl font-bold text-[--color-primary]">
+    <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
+      <nav
+        aria-label="Main"
+        className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-6 px-4"
+      >
+        <Link href="/" className="text-xl font-bold tracking-tight text-primary">
           Anvara
         </Link>
 
-        <div className="flex items-center gap-6">
-          <Link
-            href="/marketplace"
-            className="text-[--color-muted] hover:text-[--color-foreground]"
-          >
-            Marketplace
-          </Link>
-
-          {user && role === 'sponsor' && (
-            <Link
-              href="/dashboard/sponsor"
-              className="text-[--color-muted] hover:text-[--color-foreground]"
-            >
-              My Campaigns
-            </Link>
-          )}
-          {user && role === 'publisher' && (
-            <Link
-              href="/dashboard/publisher"
-              className="text-[--color-muted] hover:text-[--color-foreground]"
-            >
-              My Ad Slots
-            </Link>
-          )}
-
-          {isPending ? (
-            <span className="text-[--color-muted]">...</span>
-          ) : user ? (
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-[--color-muted]">
-                {user.name} {role && `(${role})`}
-              </span>
-              <button
-                onClick={async () => {
-                  await authClient.signOut({
-                    fetchOptions: {
-                      onSuccess: () => {
-                        window.location.href = '/';
-                      },
-                    },
-                  });
-                }}
-                className="rounded bg-gray-600 px-3 py-1.5 text-sm text-white hover:bg-gray-500"
-              >
-                Logout
-              </button>
-            </div>
-          ) : (
-            <Link
-              href="/login"
-              className="rounded bg-[--color-primary] px-4 py-2 text-sm text-white hover:bg-[--color-primary-hover]"
-            >
-              Login
-            </Link>
-          )}
+        <div className="hidden flex-1 items-center justify-between md:flex">
+          <NavLinks links={links} />
+          {account}
         </div>
+
+        {/* Mobile: native <details> disclosure, works before JS loads */}
+        <details className="group relative md:hidden">
+          <summary
+            aria-label="Menu"
+            className="flex size-11 cursor-pointer list-none items-center justify-center rounded-lg hover:bg-surface [&::-webkit-details-marker]:hidden"
+          >
+            <span aria-hidden className="text-2xl group-open:hidden">
+              ☰
+            </span>
+            <span aria-hidden className="hidden text-2xl group-open:inline">
+              ×
+            </span>
+          </summary>
+          <div className="card animate-fade-in absolute right-0 mt-2 flex w-64 flex-col gap-4 p-4">
+            <NavLinks links={links} vertical />
+            <div className="border-t border-border pt-4">{account}</div>
+          </div>
+        </details>
       </nav>
     </header>
   );
