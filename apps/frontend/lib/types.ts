@@ -35,8 +35,6 @@ export type CampaignStatus =
 export const AD_SLOT_TYPES = ['DISPLAY', 'VIDEO', 'NATIVE', 'NEWSLETTER', 'PODCAST'] as const;
 export type AdSlotType = (typeof AD_SLOT_TYPES)[number];
 
-export type PlacementStatus =
-  'PENDING' | 'APPROVED' | 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'REJECTED';
 
 export interface Campaign {
   id: string;
@@ -80,14 +78,6 @@ export interface PublicPublisher {
   isVerified: boolean;
 }
 
-export interface Placement {
-  id: string;
-  impressions: number;
-  clicks: number;
-  status: PlacementStatus;
-  campaignId: string;
-  adSlotId: string;
-}
 
 export interface DashboardStats {
   sponsors: number;

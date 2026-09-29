@@ -14,7 +14,7 @@
  */
 
 import { execSync } from 'child_process';
-import { existsSync, copyFileSync, readFileSync, writeFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { randomBytes } from 'crypto';
@@ -48,12 +48,6 @@ const colors = {
   cyan: '\x1b[36m',
   dim: '\x1b[2m',
 } as const;
-
-type ColorKey = keyof typeof colors;
-
-function log(message: string, color: ColorKey = 'reset'): void {
-  console.log(`${colors[color]}${message}${colors.reset}`);
-}
 
 function logStep(step: string, message: string): void {
   console.log(`\n${colors.cyan}[${step}]${colors.reset} ${message}`);
@@ -303,7 +297,7 @@ ${colors.cyan}╔═════════════════════
     if (verifyResult && verifyResult.includes('1 row')) {
       logSuccess(`Database '${dbName}' is accessible`);
     }
-  } catch (error) {
+  } catch {
     logWarning(`Database verification returned non-zero, but this may be OK`);
     logSuccess(`Proceeding with setup...`);
   }
@@ -323,11 +317,11 @@ ${colors.cyan}╔═════════════════════
       }
     );
     logSuccess('Better Auth tables created');
-  } catch (error: any) {
+  } catch (error) {
     logError('Failed to create Better Auth tables');
     logError(`Database: ${dbName}`);
     logError(`DATABASE_URL: ${databaseUrl}`);
-    console.error(error.message);
+    console.error(error instanceof Error ? error.message : error);
     process.exit(1);
   }
 
