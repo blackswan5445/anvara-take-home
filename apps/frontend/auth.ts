@@ -2,23 +2,16 @@ import { betterAuth } from 'better-auth';
 import { Pool } from 'pg';
 
 const connectionString = process.env.DATABASE_URL;
-if (!connectionString) {
-  throw new Error('DATABASE_URL environment variable is required');
-}
+if (!connectionString) throw new Error('DATABASE_URL environment variable is required');
 
+// No hardcoded fallback: a guessable secret would let anyone forge session cookies
+const secret = process.env.BETTER_AUTH_SECRET;
+if (!secret) throw new Error('BETTER_AUTH_SECRET environment variable is required');
+
+// CSRF/origin checks stay on (the old config disabled them); sign-in is same-origin anyway.
 export const auth = betterAuth({
   database: new Pool({ connectionString }),
-  secret: process.env.BETTER_AUTH_SECRET || 'fallback-secret-for-dev',
+  secret,
   baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3847',
-  emailAndPassword: {
-    enabled: true,
-    minPasswordLength: 6,
-  },
-  plugins: [],
-  advanced: {
-    disableCSRFCheck: true,
-  },
+  emailAndPassword: { enabled: true },
 });
-
-export type Session = typeof auth.$Infer.Session.session;
-export type User = typeof auth.$Infer.Session.user;

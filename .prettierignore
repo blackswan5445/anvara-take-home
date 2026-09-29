@@ -1,2 +1,3 @@
 dist
 node_modules
+apps/frontend/next-env.d.ts

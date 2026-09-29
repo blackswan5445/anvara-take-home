@@ -1,50 +1,50 @@
-// Simple API client
-import type { AdSlot, Campaign, DashboardStats, Placement } from './types';
+import 'server-only';
+import { headers } from 'next/headers';
+import type { FieldErrors } from './types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4291';
+// Server-only: the browser never talks to the Express API directly, so its URL isn't
+// shipped to the client and every call carries the user's session cookie.
+const API_URL = process.env.API_URL || 'http://localhost:4291';
 
 export class ApiError extends Error {
   constructor(
     message: string,
-    public readonly status: number
+    public readonly status: number,
+    public readonly fieldErrors?: FieldErrors
   ) {
     super(message);
     this.name = 'ApiError';
   }
 }
 
-export async function api<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const res = await fetch(`${API_URL}${endpoint}`, {
-    ...options,
-    // Merge after spreading options so a caller's headers don't drop Content-Type
-    headers: { 'Content-Type': 'application/json', ...options.headers },
-    credentials: 'include',
+interface ApiOptions extends Omit<RequestInit, 'body'> {
+  body?: unknown;
+}
+
+/** Call the backend as the current user. Throws ApiError with the API's message on non-2xx. */
+export async function api<T>(path: string, { body, ...init }: ApiOptions = {}): Promise<T> {
+  const cookie = (await headers()).get('cookie');
+  const res = await fetch(`${API_URL}${path}`, {
+    ...init,
+    headers: {
+      ...(body !== undefined && { 'Content-Type': 'application/json' }),
+      ...(cookie && { cookie }),
+      ...init.headers,
+    },
+    body: body === undefined ? undefined : JSON.stringify(body),
+    cache: 'no-store',
   });
+
   if (!res.ok) {
-    const body = (await res.json().catch(() => null)) as { error?: string } | null;
-    throw new ApiError(body?.error ?? `Request failed (${res.status})`, res.status);
+    const data = (await res.json().catch(() => null)) as {
+      error?: string;
+      fieldErrors?: FieldErrors;
+    } | null;
+    throw new ApiError(
+      data?.error ?? `Request failed (${res.status})`,
+      res.status,
+      data?.fieldErrors
+    );
   }
   return (res.status === 204 ? undefined : await res.json()) as T;
 }
-
-// Campaigns
-export const getCampaigns = (sponsorId?: string) =>
-  api<Campaign[]>(sponsorId ? `/api/campaigns?sponsorId=${sponsorId}` : '/api/campaigns');
-export const getCampaign = (id: string) => api<Campaign>(`/api/campaigns/${id}`);
-export const createCampaign = (data: Partial<Campaign>) =>
-  api<Campaign>('/api/campaigns', { method: 'POST', body: JSON.stringify(data) });
-
-// Ad Slots
-export const getAdSlots = (publisherId?: string) =>
-  api<AdSlot[]>(publisherId ? `/api/ad-slots?publisherId=${publisherId}` : '/api/ad-slots');
-export const getAdSlot = (id: string) => api<AdSlot>(`/api/ad-slots/${id}`);
-export const createAdSlot = (data: Partial<AdSlot>) =>
-  api<AdSlot>('/api/ad-slots', { method: 'POST', body: JSON.stringify(data) });
-
-// Placements
-export const getPlacements = () => api<Placement[]>('/api/placements');
-export const createPlacement = (data: Partial<Placement>) =>
-  api<Placement>('/api/placements', { method: 'POST', body: JSON.stringify(data) });
-
-// Dashboard
-export const getStats = () => api<DashboardStats>('/api/dashboard/stats');

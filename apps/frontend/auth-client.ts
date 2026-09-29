@@ -1,8 +1,4 @@
 import { createAuthClient } from 'better-auth/react';
 
-export const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL || 'http://localhost:3847',
-  fetchOptions: {
-    credentials: 'include',
-  },
-});
+// Same-origin: Better Auth's routes live at /api/auth on this Next.js app
+export const authClient = createAuthClient();

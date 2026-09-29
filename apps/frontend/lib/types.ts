@@ -3,10 +3,37 @@
 
 export type UserRole = 'sponsor' | 'publisher';
 
+export interface CurrentUser {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole | null;
+  sponsorId: string | null;
+  publisherId: string | null;
+}
+
+export type FieldErrors = Record<string, string>;
+
+/** What every server action returns to useActionState. */
+export interface FormState {
+  success?: boolean;
+  message?: string;
+  error?: string;
+  fieldErrors?: FieldErrors;
+  /** Submitted values, echoed back on error: React resets the form after an action runs. */
+  values?: Record<string, string>;
+}
+
+export interface Paginated<T> {
+  data: T[];
+  meta: { total: number; page: number; pageSize: number; totalPages: number };
+}
+
 export type CampaignStatus =
   'DRAFT' | 'PENDING_REVIEW' | 'APPROVED' | 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'CANCELLED';
 
-export type AdSlotType = 'DISPLAY' | 'VIDEO' | 'NATIVE' | 'NEWSLETTER' | 'PODCAST';
+export const AD_SLOT_TYPES = ['DISPLAY', 'VIDEO', 'NATIVE', 'NEWSLETTER', 'PODCAST'] as const;
+export type AdSlotType = (typeof AD_SLOT_TYPES)[number];
 
 export type PlacementStatus =
   'PENDING' | 'APPROVED' | 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'REJECTED';
@@ -25,7 +52,6 @@ export interface Campaign {
   targetCategories: string[];
   targetRegions: string[];
   sponsorId: string;
-  sponsor?: { id: string; name: string };
 }
 
 export interface AdSlot {
@@ -40,13 +66,18 @@ export interface AdSlot {
   cpmFloor: string | null;
   isAvailable: boolean;
   publisherId: string;
-  publisher?: {
-    id: string;
-    name: string;
-    website?: string | null;
-    category?: string | null;
-    monthlyViews?: number;
-  };
+  publisher?: PublicPublisher;
+}
+
+export interface PublicPublisher {
+  id: string;
+  name: string;
+  website: string | null;
+  bio: string | null;
+  category: string | null;
+  monthlyViews: number;
+  subscriberCount: number;
+  isVerified: boolean;
 }
 
 export interface Placement {
@@ -63,10 +94,11 @@ export interface DashboardStats {
   publishers: number;
   activeCampaigns: number;
   totalPlacements: number;
+  availableAdSlots: number;
   metrics: {
     totalImpressions: number;
     totalClicks: number;
     totalConversions: number;
-    avgCtr: string | number;
+    avgCtr: number;
   };
 }
