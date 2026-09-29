@@ -1,10 +1,9 @@
-import 'dotenv/config';
-import { defineConfig } from 'prisma/config';
-import path from 'path';
-
-// Load env from monorepo root
 import dotenv from 'dotenv';
-dotenv.config({ path: path.join(process.cwd(), '../../.env') });
+import path from 'path';
+import { defineConfig } from 'prisma/config';
+
+// Load env from the monorepo root
+dotenv.config({ path: path.join(process.cwd(), '../../.env'), quiet: true });
 
 export default defineConfig({
   schema: 'prisma/schema.prisma',

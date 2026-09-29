@@ -204,7 +204,7 @@ ${colors.cyan}╔═════════════════════
   if (!existsSync(envPath)) {
     dbName = `anvara_${generateRandomString(8)}`;
     const dbPassword = 'postgres'; // Must match docker-compose.yml POSTGRES_PASSWORD
-    const betterAuthSecret = generateRandomString(32);
+    const betterAuthSecret = randomBytes(32).toString('hex'); // 256 bits
     databaseUrl = `postgresql://postgres:${dbPassword}@localhost:5498/${dbName}`;
 
     // Create fingerprint file EARLY with database info

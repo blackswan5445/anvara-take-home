@@ -1,4 +1,5 @@
 import {
+  Prisma,
   PrismaClient,
   type Sponsor,
   type Publisher,
@@ -20,7 +21,8 @@ import { PrismaPg } from '@prisma/adapter-pg';
 
 // Create the PostgreSQL driver adapter for Prisma 7
 // Env is loaded via --env-file flag in package.json scripts
-const connectionString = process.env.DATABASE_URL!;
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) throw new Error('DATABASE_URL environment variable is required');
 const adapter = new PrismaPg({ connectionString });
 
 // Singleton Prisma client instance
@@ -44,6 +46,7 @@ if (process.env.NODE_ENV !== 'production') {
 export type { Sponsor, Publisher, Campaign, Creative, AdSlot, Placement, Payment };
 
 export {
+  Prisma,
   SubscriptionTier,
   CampaignStatus,
   CreativeType,
