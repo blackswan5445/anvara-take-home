@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { Router, type IRouter, type Request, type Response } from 'express';
 import { z } from 'zod';
 import { prisma } from '../db.js';
-import { optionalText, parseOr400, requiredText } from '../validation.js';
+import { money, optionalText, parseOr400, requiredText } from '../validation.js';
 
 const router: IRouter = Router();
 
@@ -11,11 +11,7 @@ const quoteRequestSchema = z.object({
   companyName: requiredText('Company name', 120),
   email: z.email('Enter a valid email address').trim().toLowerCase().max(254),
   phone: optionalText(30),
-  budget: z.coerce
-    .number({ error: 'Budget must be a number' })
-    .positive()
-    .max(99_999_999)
-    .nullish(),
+  budget: money('Budget').nullish(),
   timeline: optionalText(100),
   message: requiredText('Message', 2000),
 });
