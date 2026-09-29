@@ -41,15 +41,20 @@ Primary metric: **bookings per marketplace visitor**. Guardrail: quote requests 
 - `@next/third-parties/google` loads GA4 only when `NEXT_PUBLIC_GA_ID` is set. Without it, `track()` logs to the console in development so the events are easy to verify (`[analytics] view_item {...}`).
 - `lib/analytics.ts` exposes one typed `track(event, params)`. Event names follow GA4's recommended ecommerce/lead names so standard reports work without custom setup.
 - Server Components can't run effects, so `<TrackEvent>` fires view events on mount (deduped against StrictMode's dev double-invoke, and it re-fires when the filters change). `<TrackedLink>` records clicks before client navigation.
+- **Every event carries `user_type`** (`sponsor` / `publisher` / `guest`), also set as a GA4 user property, so each funnel can be split by who is browsing. The root layout sets it once, before any page-level event fires.
+- **CTA clicks are micro-conversions** (`cta_click` with a `cta` name): landing hero and final CTAs, "Log in to book", and opening "Request a quote".
 - Conversions fire **after the server confirms** (inside the action wrapper), never optimistically, and carry the item id, value and A/B variant.
 
 ## A/B testing
 
-- `lib/experiments.ts` declares experiments with weighted variants (`booking-cta`: `control` "Book this placement" vs `outcome` "Reserve your spot", 50/50).
+- `lib/experiments.ts` declares experiments with weighted variants. Two run concurrently:
+  - `booking-cta`: `control` "Book this placement" vs `outcome` "Reserve your spot" (read in a Server Component with `getVariant()`)
+  - `quote-cta`: `control` "Request a quote" vs `pricing` "Get custom pricing" (read in a Client Component with `useABTest()`)
 - `proxy.ts` assigns the variant **before rendering** and persists it in a cookie for a year. The Server Component reads it with `getVariant()`, so there's no flicker and crawlers see real HTML.
 - Exposure (`experiment_exposure`) fires only when the CTA is actually shown (available slot, sponsor viewer); `begin_checkout` and `purchase` carry `cta_variant` for per-variant conversion rates.
 - **Verify**: two browsers (or one incognito) get independent sticky variants; clear cookies to re-roll; force one with `/marketplace/<id>?ab_booking-cta=outcome`.
-- **Add a test**: add an entry to `EXPERIMENTS`, then call `getVariant('<id>')` where it's needed.
+- **Client Components** use `useABTest('<id>')`. The layout passes the server-read assignments through context, so client-rendered variants are in the server HTML too, with no flicker or hydration mismatch.
+- **Add a test**: add an entry to `EXPERIMENTS`, then call `getVariant('<id>')` (server) or `useABTest('<id>')` (client).
 
 ## Other bonuses
 
@@ -57,9 +62,34 @@ Primary metric: **bookings per marketplace visitor**. Guardrail: quote requests 
 - **Request a quote**: dialog on every listing (including booked ones), prefilled email for signed-in users, `POST /api/quotes/request` returning a `quoteId`, confirmation with a reference number and expected response time.
 - **Landing page**: hero, live platform stats and featured listings from the API (each degrades independently if the API is down), benefits for both sides, how it works, final CTA. Metadata template, Open Graph/Twitter cards, a generated OG image, JSON-LD, robots.txt, favicon.
 - **Dashboard UI**: summary stat tiles, status badges, budget progress bars, empty states with a CTA, dialog forms, toast feedback, inline two-step delete.
-- **Animations**: fade-in cards, toast entrance, hover lift, spinner in pending buttons; all disabled under `prefers-reduced-motion`.
+- **Animations**: fade-in cards, hover lift, button press, animated focus rings, dialogs and bottom sheets that slide in, toasts that slide in and out, cards that fade while their delete is in flight, and a spinner in pending buttons. All CSS, no animation library, and all disabled under `prefers-reduced-motion`.
 - **Mobile**: `<details>` hamburger menu (works before JS loads), dialogs become bottom sheets, 44px touch targets, 16px inputs (no iOS zoom), `inputMode` on numeric fields.
-- **Error / empty / loading states**: skeleton `loading.tsx` per section, `error.tsx` with retry, `not-found.tsx`, context-aware empty states ("Nothing matches those filters" + Clear filters).
-- **ESLint**: zero errors and zero warnings (after repairing the lint toolchain itself, which couldn't run at all).
-- **Pagination**: server-side, windowed page numbers with gaps, prev/next, "Showing X–Y of Z".
+- **Error / empty / loading states**: skeleton `loading.tsx` per section (including one matching the listing detail layout), `error.tsx` with retry, `not-found.tsx`, context-aware empty states ("Nothing matches those filters" + Clear filters).
+- **ESLint**: zero errors and zero warnings (after repairing the lint toolchain itself, which couldn't run at all). `apps/backend/src/utils/helpers.ts` was deleted rather than fixed: nothing imported it.
+- **Pagination**: server-side, windowed page numbers with gaps, prev/next, "Showing X–Y of Z", and a jump-to-page form (a plain GET, so it works without JS).
 - **Dark mode**: follows the OS setting; every color is a token, so there are no hardcoded light-only colors.
+
+## Ideas I deliberately didn't build
+
+The bonus briefs list ideas, not requirements. These were left out on purpose:
+
+- **Urgency messaging** ("only 2 left!"): the data has no real scarcity signal, and invented urgency erodes the trust the listing pages work to build. "Available now" is the honest version.
+- **Confirmation modal for deletes**: an inline two-step confirm keeps the context in view and is one click fewer than a modal for a yes/no decision.
+- **Dashboard filter/sort and grid/list toggle**: the demo accounts have a handful of items each; revisit when real accounts have dozens.
+- **Bottom navigation, swipe and pull-to-refresh**: the app has only two or three destinations per role, so a `<details>` menu covers it without custom gesture handling.
+- **Dismissible newsletter form**: it sits in the footer, not in a popup, so there's nothing to dismiss.
+- **Quote attachments and company prefill**: attachments need storage, and the sponsor record doesn't reliably hold a company name. The email is prefilled.
+- **Testimonials**: there are none to show, and fabricated ones would be worse than none. The landing page uses live platform numbers and real listings as social proof instead.
+
+## Screenshots
+
+Captured with Playwright against the seeded demo data.
+
+| | |
+| --- | --- |
+| ![Landing page](screenshots/01-landing.png) Landing | ![Marketplace](screenshots/02-marketplace.png) Marketplace with filters and pagination |
+| ![Listing, signed out](screenshots/03-listing-signed-out.png) Listing, signed out: "Log in to book" | ![Listing, sponsor](screenshots/06-listing-sponsor.png) Listing as a sponsor |
+| ![Quote dialog](screenshots/07-quote-dialog.png) Request a quote | ![Campaign validation](screenshots/05-campaign-validation.png) Field-level validation |
+| ![Sponsor dashboard](screenshots/04-sponsor-dashboard.png) Sponsor dashboard | ![Publisher dashboard](screenshots/08-publisher-dashboard.png) Publisher dashboard |
+| ![Mobile marketplace](screenshots/09-mobile-marketplace.png) Mobile | ![Mobile menu](screenshots/10-mobile-menu.png) Mobile menu |
+| ![Dark mode](screenshots/11-dark-landing.png) Dark mode | |

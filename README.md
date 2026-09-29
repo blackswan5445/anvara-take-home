@@ -50,7 +50,7 @@ Do not open pull requests to the original repo.
 
 ## Submission notes
 
-All 5 core challenges are done, plus every bonus challenge. `pnpm typecheck`, `pnpm lint` (0 errors, 0 warnings) and `pnpm test` (37 tests) pass. Commits are split by challenge.
+All 5 core challenges are done, plus every bonus challenge. `pnpm typecheck`, `pnpm lint` (0 errors, 0 warnings) and `pnpm test` (39 tests) pass. Commits are split by challenge and feature. Screenshots are in [docs/BONUS.md](docs/BONUS.md#screenshots).
 
 | Challenge            | Where to look                                                                                        |
 | -------------------- | ---------------------------------------------------------------------------------------------------- |
@@ -91,17 +91,17 @@ A sponsorship marketplace connecting sponsors with publishers, built with modern
 
 ## Tech Stack
 
-- **Frontend**: Next.js 15, React 19, Tailwind CSS v4
+- **Frontend**: Next.js 16, React 19, Tailwind CSS v4
 - **Backend**: Express.js, Prisma ORM, PostgreSQL
 - **Auth**: Better Auth
 - **Monorepo**: PNPM workspaces
 - **Testing**: Vitest
-- **Linting**: ESLint 9
+- **Linting**: ESLint 10
 
 ## Assumptions
 
 - Node.js v20+
-- PNPM v8+
+- PNPM v11 (pinned via `packageManager`; Corepack picks it up)
 - Docker installed and running
 
 If not confident, see the [Setup Guide](docs/setup.md)
@@ -250,12 +250,12 @@ Explore [all bonus challenges](docs/bonus-challenges/README.md) organized by cat
 **🎨 Design & UX**
 
 - [Marketing Landing Page](docs/bonus-challenges/design/01-landing-page.md)
-- [Dashboard Redesign](docs/bonus-challenges/design/02-dashboard.md)
-- [Campaign Builder Flow](docs/bonus-challenges/design/03-campaign-builder.md)
-- [Mobile-First Experience](docs/bonus-challenges/design/04-mobile-responsive.md)
-- [Dark Mode Support](docs/bonus-challenges/design/05-dark-mode.md)
-- [Component Library](docs/bonus-challenges/design/06-component-library.md)
-- [Data Table Pagination](docs/bonus-challenges/design/07-pagination.md)
+- [Dashboard UI/UX Improvements](docs/bonus-challenges/design/02-dashboard-ui.md)
+- [Animations & Polish](docs/bonus-challenges/design/03-animations.md)
+- [Mobile Experience](docs/bonus-challenges/design/04-mobile.md)
+- [Error & Empty States](docs/bonus-challenges/design/05-error-states.md)
+- [Fix ESLint Warnings](docs/bonus-challenges/design/06-eslint.md)
+- [Add Pagination](docs/bonus-challenges/design/07-pagination.md)
 
 **📊 Analytics & Testing**
 
