@@ -115,6 +115,19 @@ describe('campaigns', () => {
     );
   });
 
+  it('treats blank values as missing, not as 0 or 1970-01-01', async () => {
+    const res = await request(app)
+      .post('/api/campaigns')
+      .set('Cookie', sponsor)
+      .send({ name: 'Blank fields', budget: null, startDate: '', endDate: null });
+    expect(res.status).toBe(400);
+    expect(res.body.fieldErrors).toMatchObject({
+      budget: 'Budget is required',
+      startDate: 'Start date is required',
+      endDate: 'End date is required',
+    });
+  });
+
   it('creates, updates and deletes a campaign, ignoring a spoofed sponsorId', async () => {
     const created = await request(app)
       .post('/api/campaigns')

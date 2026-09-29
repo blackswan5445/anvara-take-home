@@ -2,7 +2,7 @@ import { Router, type IRouter, type Request, type Response } from 'express';
 import { z } from 'zod';
 import { requireAuth, requireRole, roleIdOf } from '../auth.js';
 import { PlacementStatus, PricingModel, prisma, type Prisma } from '../db.js';
-import { money, parseOr400 } from '../validation.js';
+import { money, parseOr400, requiredDate } from '../validation.js';
 
 const router: IRouter = Router();
 
@@ -49,8 +49,8 @@ const createPlacementSchema = z
     adSlotId: z.string().min(1, 'Ad slot is required'),
     agreedPrice: money('Agreed price'),
     pricingModel: z.enum(PricingModel).default(PricingModel.CPM),
-    startDate: z.coerce.date({ error: 'Start date is required' }),
-    endDate: z.coerce.date({ error: 'End date is required' }),
+    startDate: requiredDate('Start date'),
+    endDate: requiredDate('End date'),
   })
   .refine(({ startDate, endDate }) => endDate >= startDate, {
     path: ['endDate'],

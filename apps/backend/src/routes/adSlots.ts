@@ -2,7 +2,7 @@ import { Router, type IRouter, type Request, type Response } from 'express';
 import { z } from 'zod';
 import { requireAuth, requireOwnership, requireRole, roleIdOf } from '../auth.js';
 import { AdSlotType, prisma } from '../db.js';
-import { money, optionalText, parseOr400, requiredText } from '../validation.js';
+import { money, optionalText, parseOr400, requiredText, toNumber } from '../validation.js';
 
 const router: IRouter = Router();
 
@@ -15,11 +15,15 @@ const requireOwnAdSlot = requireOwnership('Ad slot', 'publisher', async (id) => 
 });
 
 const pixels = (label: string) =>
-  z.coerce
-    .number({ error: `${label} must be a number` })
-    .int(`${label} must be a whole number`)
-    .positive(`${label} must be greater than 0`)
-    .max(10_000, `${label} is too large`)
+  z
+    .preprocess(
+      toNumber,
+      z
+        .number({ error: `${label} must be a number` })
+        .int(`${label} must be a whole number`)
+        .positive(`${label} must be greater than 0`)
+        .max(10_000, `${label} is too large`)
+    )
     .nullish();
 
 // publisherId is deliberately absent: it always comes from the session

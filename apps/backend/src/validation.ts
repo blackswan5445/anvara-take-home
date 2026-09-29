@@ -1,12 +1,28 @@
 import type { Response } from 'express';
 import { z } from 'zod';
 
-// Decimal(10, 2) columns top out just under 100M
+// Blank form values arrive as '' or null. z.coerce would turn those into 0 / 1970-01-01 and
+// accept them, so convert explicitly and let blanks through as undefined ("required").
+const isBlank = (value: unknown) => value === '' || value === null || value === undefined;
+export const toNumber = (value: unknown) => (isBlank(value) ? undefined : Number(value));
+const toDate = (value: unknown) =>
+  typeof value === 'string' && value !== '' ? new Date(value) : isBlank(value) ? undefined : value;
+
+const requiredOr = (label: string, invalid: string) => (issue: { input?: unknown }) =>
+  issue.input === undefined ? `${label} is required` : invalid;
+
+// Decimal(10, 2) columns top out just under 100M. Use .nullish() for optional amounts.
 export const money = (label: string) =>
-  z.coerce
-    .number({ error: `${label} must be a number` })
-    .positive(`${label} must be greater than 0`)
-    .max(99_999_999.99, `${label} is too large`);
+  z.preprocess(
+    toNumber,
+    z
+      .number({ error: requiredOr(label, `${label} must be a number`) })
+      .positive(`${label} must be greater than 0`)
+      .max(99_999_999.99, `${label} is too large`)
+  );
+
+export const requiredDate = (label: string) =>
+  z.preprocess(toDate, z.date({ error: requiredOr(label, `${label} must be a valid date`) }));
 
 // Blank strings clear the field (null); undefined leaves it untouched on updates
 export const optionalText = (max: number) =>

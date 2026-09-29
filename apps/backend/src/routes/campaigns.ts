@@ -2,7 +2,14 @@ import { Router, type IRouter, type Request, type Response } from 'express';
 import { z } from 'zod';
 import { requireAuth, requireOwnership, requireRole, roleIdOf } from '../auth.js';
 import { CampaignStatus, prisma } from '../db.js';
-import { money, optionalText, parseOr400, requiredText, sendFieldError } from '../validation.js';
+import {
+  money,
+  optionalText,
+  parseOr400,
+  requiredDate,
+  requiredText,
+  sendFieldError,
+} from '../validation.js';
 
 const router: IRouter = Router();
 
@@ -30,8 +37,8 @@ const campaignFields = z.object({
   budget: money('Budget'),
   cpmRate: money('CPM rate').nullish(),
   cpcRate: money('CPC rate').nullish(),
-  startDate: z.coerce.date({ error: 'Start date is required' }),
-  endDate: z.coerce.date({ error: 'End date is required' }),
+  startDate: requiredDate('Start date'),
+  endDate: requiredDate('End date'),
   targetCategories: z.array(z.string().trim().min(1).max(50)).max(20).optional(),
   targetRegions: z.array(z.string().trim().min(1).max(50)).max(20).optional(),
   status: z.enum(sponsorStatuses).optional(),
